@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>📋 مهام — Agent Hub</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}body{background:#0d1421;color:#e0e6f0;font-family:'Segoe UI',Tahoma,sans-serif}
+.header{background:linear-gradient(135deg,#0d1421,#1a2535);border-bottom:2px solid #D4AF37;padding:16px 24px;display:flex;align-items:center;justify-content:space-between}
+.logo{font-size:1.2rem;font-weight:700;color:#D4AF37}
+nav a{color:#8899aa;text-decoration:none;padding:6px 14px;border-radius:6px;font-size:.85rem;margin-right:4px}
+nav a:hover,nav a.active{background:#D4AF3722;color:#D4AF37}
+.main{padding:24px;max-width:1000px;margin:0 auto}
+.task-card{background:#1a2535;border:1px solid #2a3545;border-radius:10px;padding:14px 18px;margin-bottom:10px;display:flex;gap:14px;align-items:flex-start}
+.task-info{flex:1}
+.task-title{font-size:.9rem;font-weight:500;margin-bottom:4px}
+.task-meta{font-size:.78rem;color:#8899aa}
+.badge{padding:3px 10px;border-radius:20px;font-size:.76rem;white-space:nowrap}
+.pending{background:#ffaa0022;color:#ffaa00}.done{background:#00ff8822;color:#00ff88}.urgent{background:#ff446622;color:#ff4466}
+.priority-dot{width:8px;height:8px;border-radius:50%;display:inline-block;margin-left:6px}
+.p-urgent{background:#ff4466}.p-high{background:#ffaa00}.p-normal{background:#44aaff}
+</style>
+</head>
+<body>
+<div class="header">
+  <div class="logo">📋 قائمة المهام</div>
+  <nav>
+    <a href="/">🏠 لوحة</a><a href="/channels.html">💬 نقاشات</a>
+    <a href="/skills.html">🎓 مهارات</a><a href="/tasks.html" class="active">📋 مهام</a><a href="/feed.html">📡 السجل</a>
+  </nav>
+</div>
+<div class="main">
+  <div id="tasks"><div style="color:#556;padding:20px">جاري التحميل...</div></div>
+</div>
+<script>
+function timeAgo(iso){const d=(Date.now()-new Date(iso))/1000;if(d<3600)return Math.floor(d/60)+' دق';if(d<86400)return Math.floor(d/3600)+' س';return Math.floor(d/86400)+' يوم';}
+async function loadTasks(){
+  const r=await fetch('/api/tasks');
+  const tasks=await r.json();
+  const el=document.getElementById('tasks');
+  if(!tasks.length){el.innerHTML='<div style="color:#556;padding:20px">لا توجد مهام</div>';return;}
+  el.innerHTML=tasks.reverse().map(t=>`
+    <div class="task-card">
+      <span class="priority-dot p-${t.priority}"></span>
+      <div class="task-info">
+        <div class="task-title">${t.task}</div>
+        <div class="task-meta">من: ${t.fromAgent} → إلى: ${t.toAgent} | ${timeAgo(t.createdAt)}</div>
+      </div>
+      <span class="badge ${t.status==='done'?'done':'pending'}">${t.status==='done'?'✅ منتهٍ':'⏳ معلّق'}</span>
+    </div>`).join('');
+}
+loadTasks();setInterval(loadTasks,20000);
+</script>
+</body>
+</html>

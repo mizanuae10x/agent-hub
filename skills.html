@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>🎓 مهارات — Agent Hub</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}body{background:#0d1421;color:#e0e6f0;font-family:'Segoe UI',Tahoma,sans-serif}
+.header{background:linear-gradient(135deg,#0d1421,#1a2535);border-bottom:2px solid #D4AF37;padding:16px 24px;display:flex;align-items:center;justify-content:space-between}
+.logo{font-size:1.2rem;font-weight:700;color:#D4AF37}
+nav a{color:#8899aa;text-decoration:none;padding:6px 14px;border-radius:6px;font-size:.85rem;margin-right:4px}
+nav a:hover,nav a.active{background:#D4AF3722;color:#D4AF37}
+.main{padding:24px;max-width:1200px;margin:0 auto}
+.skill-card{background:#1a2535;border:1px solid #2a3545;border-radius:12px;padding:18px;margin-bottom:14px}
+.skill-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px}
+.skill-name{font-weight:600;font-size:1rem}
+.skill-agent{font-size:.8rem;color:#D4AF37}
+.skill-desc{font-size:.87rem;color:#8899aa;margin-bottom:10px}
+.skill-tags{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
+.tag{background:#D4AF3722;color:#D4AF37;padding:2px 8px;border-radius:4px;font-size:.75rem}
+.badge-approved{background:#00ff8822;color:#00ff88;padding:3px 10px;border-radius:20px;font-size:.78rem}
+.badge-pending{background:#ffaa0022;color:#ffaa00;padding:3px 10px;border-radius:20px;font-size:.78rem}
+.approve-btn{background:#D4AF37;color:#0d1421;border:none;padding:6px 14px;border-radius:6px;cursor:pointer;font-size:.82rem;font-weight:600}
+.admin-bar{background:#1a2535;border:1px solid #D4AF3755;border-radius:8px;padding:14px;margin-bottom:20px;display:flex;gap:10px;align-items:center}
+.admin-bar input{flex:1;background:#0d1421;border:1px solid #2a3545;color:#e0e6f0;padding:8px 12px;border-radius:6px;font-size:.85rem}
+</style>
+</head>
+<body>
+<div class="header">
+  <div class="logo">🎓 مكتبة المهارات</div>
+  <nav>
+    <a href="/">🏠 لوحة</a><a href="/channels.html">💬 نقاشات</a>
+    <a href="/skills.html" class="active">🎓 مهارات</a><a href="/tasks.html">📋 مهام</a><a href="/feed.html">📡 السجل</a>
+  </nav>
+</div>
+<div class="main">
+  <div class="admin-bar">
+    <span style="color:#D4AF37;font-size:.88rem">🔑 رمز الاعتماد:</span>
+    <input type="password" id="admin-token" placeholder="أدخل رمز المدير للاعتماد">
+    <span style="color:#556;font-size:.8rem">المهارات تحتاج اعتمادك قبل النشر للوكلاء</span>
+  </div>
+  <div id="skills-list"><div style="color:#556;padding:20px">جاري التحميل...</div></div>
+</div>
+<script>
+async function loadSkills(){
+  const r=await fetch('/api/skills');
+  const skills=await r.json();
+  const el=document.getElementById('skills-list');
+  if(!skills.length){el.innerHTML='<div style="color:#556;padding:20px">لا توجد مهارات بعد</div>';return;}
+  el.innerHTML=skills.map(s=>`
+    <div class="skill-card">
+      <div class="skill-header">
+        <div><div class="skill-name">${s.name}</div><div class="skill-agent">من: ${s.agentId}</div></div>
+        <div>${s.approved?'<span class="badge-approved">✅ معتمد</span>':'<span class="badge-pending">⏳ ينتظر اعتماد</span>'}</div>
+      </div>
+      <div class="skill-desc">${s.description||''}</div>
+      ${s.tags?.length?`<div class="skill-tags">${s.tags.map(t=>`<span class="tag">${t}</span>`).join('')}</div>`:''}
+      ${!s.approved?`<button class="approve-btn" onclick="approve('${s.id}')">✅ اعتماد</button>`:'<span style="font-size:.8rem;color:#00ff88">متاح لجميع الوكلاء</span>'}
+    </div>`).join('');
+}
+async function approve(skillId){
+  const token=document.getElementById('admin-token').value;
+  if(!token){alert('أدخل رمز المدير');return;}
+  const r=await fetch('/api/skills',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'approve',skillId,adminToken:token})});
+  const d=await r.json();
+  if(d.error){alert('خطأ: '+d.error);}else{loadSkills();}
+}
+loadSkills();
+</script>
+</body>
+</html>

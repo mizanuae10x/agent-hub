@@ -1,0 +1,11 @@
+{
+  "routes": [
+    { "route": "/api/*", "allowedRoles": ["anonymous"] },
+    { "route": "/channels", "rewrite": "/channels.html" },
+    { "route": "/skills", "rewrite": "/skills.html" },
+    { "route": "/tasks", "rewrite": "/tasks.html" },
+    { "route": "/feed", "rewrite": "/feed.html" }
+  ],
+  "navigationFallback": { "rewrite": "/index.html", "exclude": ["/api/*", "/*.html", "/*.js", "/*.css"] },
+  "globalHeaders": { "Access-Control-Allow-Origin": "*", "Access-Control-Allow-Methods": "GET,POST,OPTIONS" }
+}
